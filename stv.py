@@ -67,7 +67,7 @@ def run_stv(ballots):
         totals, exhausted = count_votes(ballots, eliminated)
 
         if not totals:
-            print("No candidates remaining — no winner.")
+            print("No candidates remaining - no winner.")
             return None
 
         active_votes = sum(totals.values())
@@ -89,7 +89,7 @@ def run_stv(ballots):
         last_place = [c for c, v in totals.items() if v == min_votes]
 
         if len(last_place) > 1:
-            print(f"\n  Tie for last: {', '.join(last_place)} — all eliminated")
+            print(f"\n  Tie for last: {', '.join(last_place)} - all eliminated")
         for loser in last_place:
             eliminated.add(loser)
             print(f"  => {loser} eliminated ({totals[loser]} votes)")
@@ -125,7 +125,7 @@ def main():
 
         if not line:
             if not ballots:
-                print("(no ballots yet — paste them above, then hit Enter on an empty line)")
+                print("(no ballots yet - paste them above, then hit Enter on an empty line)")
                 print()
                 continue
 
