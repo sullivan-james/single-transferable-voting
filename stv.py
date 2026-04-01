@@ -38,7 +38,7 @@ def count_votes(ballots, eliminated):
     return totals, exhausted
 
 
-def run_irv(ballots):
+def run_stv(ballots):
     eliminated = set()
     total_ballots = len(ballots)
     round_num = 0
@@ -106,7 +106,7 @@ def main():
                 print()
                 continue
 
-            winner = run_irv(ballots)
+            winner = run_stv(ballots)
 
             print("\n" + "=" * 40)
             if winner == "RON":
@@ -116,7 +116,9 @@ def main():
             else:
                 print("RESULT: No winner")
             print("=" * 40)
-            print(f"\n{len(ballots)} ballots counted. Paste more to add them, or Ctrl+C to quit.\n")
+            print(f"\n{len(ballots)} ballots counted.")
+            ballots.clear()
+            print("Paste ballots for the next position, or Ctrl+C to quit.\n")
         else:
             ballot = parse_ballot(line)
             if ballot:
