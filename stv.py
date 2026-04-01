@@ -86,13 +86,15 @@ def run_stv(ballots):
             return winner
 
         min_votes = min(totals.values())
-        last_place = [c for c, v in totals.items() if v == min_votes]
+        last_place = sorted(c for c, v in totals.items() if v == min_votes)
 
         if len(last_place) > 1:
-            print(f"\n  Tie for last: {', '.join(last_place)} - all eliminated")
-        for loser in last_place:
-            eliminated.add(loser)
-            print(f"  => {loser} eliminated ({totals[loser]} votes)")
+            print(f"\n  TIE: {', '.join(last_place)} are all tied with {min_votes} votes.")
+            return None
+
+        loser = last_place[0]
+        eliminated.add(loser)
+        print(f"  => {loser} eliminated ({totals[loser]} votes)")
 
         remaining = [c for c in totals if c not in eliminated]
         if len(remaining) == 1:
@@ -135,7 +137,7 @@ def main():
             if winner:
                 print(f"RESULT: {winner}")
             else:
-                print("RESULT: No winner")
+                print("RESULT: Tie - returning officer intervention required")
             print("=" * 40)
             print(f"\n{len(ballots)} ballots counted.")
             ballots.clear()
