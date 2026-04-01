@@ -17,7 +17,24 @@ Paste one ballot per line. Press Enter on an empty line to see results.
 Keep pasting more ballots, or Ctrl+C to quit.
 """
 
+import os
+import sys
 from collections import defaultdict
+from datetime import datetime
+
+
+class Tee:
+    """Write to both stdout and a log file simultaneously."""
+    def __init__(self, file):
+        self.file = file
+
+    def write(self, data):
+        sys.__stdout__.write(data)
+        self.file.write(data)
+
+    def flush(self):
+        sys.__stdout__.flush()
+        self.file.flush()
 
 
 def parse_ballot(line):
@@ -85,8 +102,14 @@ def run_stv(ballots):
 
 
 def main():
+    os.makedirs("output", exist_ok=True)
+    log_path = os.path.join("output", f"stv_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
+    log_file = open(log_path, "w", encoding="utf-8")
+    sys.stdout = Tee(log_file)
+
     ballots = []
     print("STV Vote Counter")
+    print(f"Logging to {log_path}")
     print("Paste all ballots, then press Enter on an empty line to count. Ctrl+C to quit.")
     print()
 
@@ -121,6 +144,8 @@ def main():
             ballot = parse_ballot(line)
             if ballot:
                 ballots.append(ballot)
+
+    log_file.close()
 
 
 if __name__ == "__main__":
