@@ -20,3 +20,21 @@ jobs:
 
       - name: Run tests
         run: python -m pytest test_stv.py -v
+
+  release:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Release build-${{ github.run_number }}
+          files: |
+            stv.py
+            README.md

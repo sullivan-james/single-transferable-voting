@@ -1,2 +1,18 @@
-venv
-output
+# Virtual environment
+venv/
+.venv/
+
+# Output logs
+output/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Pytest
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
