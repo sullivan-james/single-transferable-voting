@@ -109,9 +109,7 @@ def main():
             winner = run_stv(ballots)
 
             print("\n" + "=" * 40)
-            if winner == "RON":
-                print("RESULT: RON (Re-Open Nominations) — position not filled")
-            elif winner:
+            if winner:
                 print(f"RESULT: {winner}")
             else:
                 print("RESULT: No winner")

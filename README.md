@@ -27,9 +27,9 @@ Paste all ballots, press **Enter on an empty line** to count. You can paste more
 Microsoft Forms exports ranked responses as semicolon-separated values, e.g.:
 
 ```
-Candidate 2;Candidate 1;Candidate 3;RON;
-Candidate 1;Candidate 3;Candidate 2;RON;
-RON;Candidate 1;Candidate 2;Candidate 3;
+Candidate 2;Candidate 1;Candidate 3;
+Candidate 1;Candidate 3;Candidate 2;
+Candidate 3;Candidate 1;Candidate 2;
 ```
 
 Each line is one voter's preferences in order (most preferred first). Trailing semicolons are ignored.
@@ -40,10 +40,6 @@ To get this from Microsoft Forms:
 3. Select and copy all responses
 4. Paste directly into the terminal when prompted
 
-## RON (Re-Open Nominations)
-
-If **RON** wins, the result is reported as "position not filled" rather than declaring RON the winner.
-
 ## Example output
 
 ```
@@ -52,10 +48,8 @@ Total ballots: 9
 Round 1:
   Candidate 3                    4 votes  (44.4%)  ######################
   Candidate 1                    3 votes  (33.3%)  ################
-  Candidate 2                    1 votes  (11.1%)  #####
-  RON                            1 votes  (11.1%)  #####
-  => Candidate 2 eliminated (1 votes)
-  => RON eliminated (1 votes)
+  Candidate 2                    2 votes  (22.2%)  ###########
+  => Candidate 2 eliminated (2 votes)
 
 Round 2:
   Candidate 3                    5 votes  (55.6%)  ###########################
