@@ -45,8 +45,13 @@ jobs:
       - name: Install PyInstaller
         run: pip install pyinstaller
 
-      - name: Build executable
+      - name: Build executable (Windows)
+        if: runner.os == 'Windows'
         run: pyinstaller --onefile src/stv.py
+
+      - name: Build executable (macOS universal)
+        if: runner.os == 'macOS'
+        run: pyinstaller --onefile --target-arch universal2 src/stv.py
 
       - name: Package release (Windows)
         if: runner.os == 'Windows'
