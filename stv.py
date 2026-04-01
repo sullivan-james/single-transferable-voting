@@ -42,6 +42,21 @@ def parse_ballot(line):
     return prefs if prefs else None
 
 
+def validate_ballot(ballot, expected_candidates):
+    """
+    Check that a ballot contains exactly the expected candidates.
+    Returns an error string if invalid, or None if valid.
+    """
+    actual = set(ballot)
+    missing = expected_candidates - actual
+    extra = actual - expected_candidates
+    if missing:
+        return f"missing candidate(s): {', '.join(sorted(missing))}"
+    if extra:
+        return f"unexpected candidate(s): {', '.join(sorted(extra))}"
+    return None
+
+
 def count_votes(ballots, eliminated):
     totals = defaultdict(int)
     exhausted = 0
@@ -60,7 +75,7 @@ def run_stv(ballots):
     total_ballots = len(ballots)
     round_num = 0
 
-    print(f"\nTotal ballots: {total_ballots}")
+    print(f"\nTotal VALID ballots: {total_ballots}")
 
     while True:
         round_num += 1
@@ -110,6 +125,8 @@ def main():
     sys.stdout = Tee(log_file)
 
     ballots = []
+    entries = []  # all entries: (ballot | None, raw_line, error | None)
+    expected_candidates = None
     print("STV Vote Counter")
     print(f"Logging to {log_path}")
     print("Paste all ballots, then press Enter on an empty line to count. Ctrl+C to quit.")
@@ -131,6 +148,15 @@ def main():
                 print()
                 continue
 
+            skipped = sum(1 for _, _, err in entries if err)
+
+            print("\nBallots cast:")
+            for i, (ballot, raw, error) in enumerate(entries, 1):
+                if error:
+                    print(f"  {i:>3}. [INVALID - {error}] {raw}")
+                else:
+                    print(f"  {i:>3}. {' > '.join(ballot)}")
+
             winner = run_stv(ballots)
 
             print("\n" + "=" * 40)
@@ -138,14 +164,25 @@ def main():
                 print(f"RESULT: {winner}")
             else:
                 print("RESULT: Tie - returning officer intervention required")
+            if skipped:
+                print(f"WARNING: {skipped} BALLOT(S) WERE SKIPPED DUE TO INVALID CANDIDATES")
             print("=" * 40)
-            print(f"\n{len(ballots)} ballots counted.")
+
             ballots.clear()
-            print("Paste ballots for the next position, or Ctrl+C to quit.\n")
+            entries.clear()
+            expected_candidates = None
+            print("\nPaste ballots for the next position, or Ctrl+C to quit.\n")
         else:
             ballot = parse_ballot(line)
             if ballot:
-                ballots.append(ballot)
+                if expected_candidates is None:
+                    expected_candidates = set(ballot)
+                error = validate_ballot(ballot, expected_candidates)
+                if error:
+                    entries.append((None, line, error))
+                else:
+                    ballots.append(ballot)
+                    entries.append((ballot, line, None))
 
     log_file.close()
 

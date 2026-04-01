@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 from io import StringIO
 
-from stv import parse_ballot, count_votes, run_stv
+from stv import parse_ballot, validate_ballot, count_votes, run_stv
 
 
 class TestParseBallot(unittest.TestCase):
@@ -23,6 +23,50 @@ class TestParseBallot(unittest.TestCase):
 
     def test_single_candidate(self):
         self.assertEqual(parse_ballot("Alice;"), ["Alice"])
+
+    def test_double_semicolons_skip_empty_fields(self):
+        # Empty fields between semicolons (e.g. Forms leaves a gap) are ignored
+        self.assertEqual(parse_ballot("Alice;;Bob"), ["Alice", "Bob"])
+
+    def test_leading_semicolon(self):
+        self.assertEqual(parse_ballot(";Alice;Bob"), ["Alice", "Bob"])
+
+    def test_windows_line_ending(self):
+        # Microsoft Forms exports may include \r
+        self.assertEqual(parse_ballot("Alice;Bob;Carol\r"), ["Alice", "Bob", "Carol"])
+
+    def test_fewer_preferences_than_candidates(self):
+        # Voter only ranked 2 of 4 candidates — valid partial ballot
+        self.assertEqual(parse_ballot("Alice;Bob;"), ["Alice", "Bob"])
+
+
+class TestValidateBallot(unittest.TestCase):
+    def setUp(self):
+        self.expected = {"Alice", "Bob", "Carol"}
+
+    def test_valid_ballot(self):
+        self.assertIsNone(validate_ballot(["Alice", "Bob", "Carol"], self.expected))
+
+    def test_valid_ballot_different_order(self):
+        self.assertIsNone(validate_ballot(["Carol", "Alice", "Bob"], self.expected))
+
+    def test_missing_candidate(self):
+        error = validate_ballot(["Alice", "Bob"], self.expected)
+        self.assertIsNotNone(error)
+        self.assertIn("Carol", error)
+
+    def test_extra_candidate(self):
+        error = validate_ballot(["Alice", "Bob", "Carol", "Dave"], self.expected)
+        self.assertIsNotNone(error)
+        self.assertIn("Dave", error)
+
+    def test_completely_different_candidates(self):
+        error = validate_ballot(["Dave", "Eve", "Frank"], self.expected)
+        self.assertIsNotNone(error)
+
+    def test_empty_ballot(self):
+        error = validate_ballot([], self.expected)
+        self.assertIsNotNone(error)
 
 
 class TestCountVotes(unittest.TestCase):
