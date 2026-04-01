@@ -19,21 +19,56 @@ jobs:
         run: pip install pytest
 
       - name: Run tests
-        run: python -m pytest test_stv.py -v
+        run: python -m pytest tests/ -v
+
+  build:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: stv.exe
+            zip: stv-${{ github.ref_name }}-windows.zip
+          - os: macos-latest
+            artifact: stv
+            zip: stv-${{ github.ref_name }}-macos.zip
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build executable
+        run: pyinstaller --onefile src/stv.py
+
+      - name: Package release
+        shell: bash
+        run: zip ${{ matrix.zip }} dist/${{ matrix.artifact }} README.md
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.zip }}
+          path: ${{ matrix.zip }}
 
   release:
-    needs: test
+    needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Package release
-        run: zip stv-${{ github.ref_name }}.zip stv.py README.md
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: stv-${{ github.ref_name }}.zip
+          files: "**/*.zip"
